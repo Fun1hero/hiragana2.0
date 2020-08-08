@@ -18,12 +18,44 @@ struct NeuroButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding(20)
+            .contentShape(RoundedRectangle(cornerRadius: 25))
             .background(
-                RoundedRectangle(cornerRadius: 25)
-                    .fill(Color.offWhite)
-                    .frame(width: self.width, height: self.height)
-                    .shadow(color: Color.black.opacity(0.2), radius: 10, x: 10, y: 10)
-                    .shadow(color: Color.white.opacity(0.7), radius: 10, x: -5, y: -5)
+                Group {
+                    if (configuration.isPressed){
+                        RoundedRectangle(cornerRadius: 25)
+                            .fill(Color.offWhite)
+                            .frame(width: self.width, height: self.height)
+                    } else {
+                        RoundedRectangle(cornerRadius: 25)
+                            .fill(Color.offWhite)
+                            .frame(width: self.width, height: self.height)
+                            .shadow(color: Color.black.opacity(0.2), radius: 10, x: 10, y: 10)
+                            .shadow(color: Color.white.opacity(0.7), radius: 10, x: -5, y: -5)
+                    }
+                }
+        )
+    }
+}
+
+struct NeuroButtonCircleStyle: ButtonStyle {
+//    @State var width: CGFloat
+//    @State var height: CGFloat
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding(20)
+            .contentShape(Circle())
+            .background(
+                Group {
+                    if (configuration.isPressed){
+                        Circle()
+                            .fill(Color.offWhite)
+                    } else {
+                        Circle()
+                            .fill(Color.offWhite)
+                            .shadow(color: Color.black.opacity(0.2), radius: 10, x: 10, y: 10)
+                            .shadow(color: Color.white.opacity(0.7), radius: 10, x: -5, y: -5)
+                    }
+                }
         )
     }
 }
@@ -65,7 +97,7 @@ struct ContentView: View {
             //        NavigationView {
             
             VStack (spacing: 40) {
-                HStack (spacing: 50){
+                HStack (spacing: 45){
                     Button(action: {
                         self.nextKana(next: true)
                     }){
@@ -92,8 +124,10 @@ struct ContentView: View {
                 
                 
                 Text(self.hiraganaSequence[self.selectedKana])
-                    .font(.system(size: 40, weight: .light))
+                    .font(.system(size: 50, weight: .light))
                     .foregroundColor(.gray)
+                    .padding(.top, 40)
+//                    .padding(.top)
 
                 
                 HStack (spacing: 20){
@@ -101,14 +135,16 @@ struct ContentView: View {
                         self.inOrder.toggle()
                     }){
                         Image(systemName: "textformat.abc.dottedunderline")
-                    }
+                        .foregroundColor(.gray)
+                    }.buttonStyle(NeuroButtonCircleStyle())
                     
                     Button(action: {
                         print("order")
                         
                     }){
                         Image(systemName: "studentdesk")
-                    }
+                        .foregroundColor(.gray)
+                    }.buttonStyle(NeuroButtonCircleStyle())
                     
                     
                     Button(action: {
@@ -116,16 +152,17 @@ struct ContentView: View {
                         
                     }){
                         Image(systemName: "speaker.2.fill")
-                    }
+                        .foregroundColor(.gray)
+                    }.buttonStyle(NeuroButtonCircleStyle())
                     
                     Button(action: {
                         self.selectedKana = 0
                     }){
-                        Image(systemName: "gobackward")
-                    }
+                        Image(systemName: "arrow.counterclockwise")
+                        .foregroundColor(.gray)
+                    }.buttonStyle(NeuroButtonCircleStyle())
                 }
                 .padding()
-                .background(Color.gray.opacity(0.1))
                 
                 
             }.navigationBarTitle("Hiragana")
