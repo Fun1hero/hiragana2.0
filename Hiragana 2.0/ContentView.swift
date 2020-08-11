@@ -11,10 +11,76 @@ import AVFoundation
 
 extension Color {
     static let offWhite = Color.init(red: 225/255, green: 225/255, blue: 235/255)
+    
+    static let darkStart = Color.init(red: 50/255, green: 60/255, blue: 65/255)
+    static let darkEnd = Color.init(red: 25/255, green: 25/255, blue: 30/255)
+    
     static let accentColor = Color.init(red: 90/255, green: 185/255, blue: 234/255)
     static let accentColorPurple = Color.init(red: 151/255, green: 96/255, blue: 208/255)
     
 }
+
+struct DarkBackground<S: Shape>: View {
+    var isHighlighted: Bool
+    var shape: S
+    
+    var body: some View {
+        ZStack {
+            if isHighlighted {
+                shape
+                    .fill(LinearGradient(Color.darkEnd, Color.darkStart))
+                    .overlay(shape.stroke(LinearGradient(Color.darkStart, Color.darkEnd), lineWidth: 2))
+                    .shadow(color: Color.darkStart, radius: 10, x: 5, y: 5)
+                    .shadow(color: Color.darkEnd, radius: 10, x: -5, y: -5)
+            } else {
+                shape
+                    .fill(LinearGradient(Color.darkStart, Color.darkEnd))
+                    .overlay(shape.stroke(Color.darkEnd, lineWidth: 2))
+                    .shadow(color: Color.darkStart, radius: 10, x: -10, y: -10)
+                    .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
+            }
+        }
+    }
+}
+
+struct LightBackground<S: Shape>: View {
+    var isHighlighted: Bool
+    var shape: S
+    
+    var body: some View {
+        ZStack {
+            if isHighlighted {
+                shape
+                    .fill(Color.offWhite)
+                    .overlay(
+                        shape
+                            .stroke(Color.gray, lineWidth: 4)
+                            .blur(radius: 4)
+                            .offset(x: 2, y:2)
+                            .mask(
+                                shape.fill(LinearGradient(Color.black, Color.clear))
+                        )
+                        
+                    )
+                    .overlay(
+                        shape
+                            .stroke(Color.white, lineWidth: 4)
+                            .blur(radius: 4)
+                            .offset(x: -2, y:-2)
+                            .mask(
+                                shape.fill(LinearGradient(Color.clear, Color.black))
+                        )
+                    )
+            } else {
+                shape
+                    .fill(Color.offWhite)
+                    .shadow(color: Color.black.opacity(0.2), radius: 10, x: 10, y: 10)
+                    .shadow(color: Color.white.opacity(0.7), radius: 10, x: -5, y: -5)
+            }
+        }
+    }
+}
+
 
 extension LinearGradient {
     init(_ colors: Color...) {
@@ -25,6 +91,8 @@ extension LinearGradient {
 struct NeuroButtonStyle: ButtonStyle {
     @State var width: CGFloat
     @State var height: CGFloat
+    @State var style: Bool
+    
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding(20)
@@ -33,36 +101,12 @@ struct NeuroButtonStyle: ButtonStyle {
             
             .background(
                 Group {
-                    if (configuration.isPressed){
-                        
-                        RoundedRectangle(cornerRadius: 25)
-                            .fill(Color.offWhite)
+                    if style {
+                        DarkBackground(isHighlighted: configuration.isPressed, shape: RoundedRectangle(cornerRadius: 25))
                             .frame(width: self.width, height: self.height)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color.gray, lineWidth: 4)
-                                    .blur(radius: 4)
-                                    .offset(x: 2, y:2)
-                                    .mask(
-                                        RoundedRectangle(cornerRadius: 25).fill(LinearGradient(Color.black, Color.clear))
-                                )
-                                
-                        )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color.white, lineWidth: 4)
-                                    .blur(radius: 4)
-                                    .offset(x: -2, y:-2)
-                                    .mask(
-                                        RoundedRectangle(cornerRadius: 25).fill(LinearGradient(Color.clear, Color.black))
-                                )
-                        )
                     } else {
-                        RoundedRectangle(cornerRadius: 25)
-                            .fill(Color.offWhite)
+                        LightBackground(isHighlighted: configuration.isPressed, shape: RoundedRectangle(cornerRadius: 25))
                             .frame(width: self.width, height: self.height)
-                            .shadow(color: Color.black.opacity(0.2), radius: 10, x: 10, y: 10)
-                            .shadow(color: Color.white.opacity(0.7), radius: 10, x: -5, y: -5)
                     }
                 }
         )
@@ -71,39 +115,17 @@ struct NeuroButtonStyle: ButtonStyle {
 
 struct NeuroButtonCircleStyle: ButtonStyle {
     @State var pressed: Bool?
+    @State var style: Bool
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding(20)
             .contentShape(Circle())
             .background(
                 Group {
-                    if (pressed ?? configuration.isPressed){
-                        Circle()
-                            .fill(Color.offWhite)
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.gray, lineWidth: 4)
-                                    .blur(radius: 4)
-                                    .offset(x: 2, y:2)
-                                    .mask(
-                                        Circle().fill(LinearGradient(Color.black, Color.clear))
-                                )
-                                
-                        )
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.white, lineWidth: 8)
-                                    .blur(radius: 4)
-                                    .offset(x: -2, y:-2)
-                                    .mask(
-                                        Circle().fill(LinearGradient(Color.clear, Color.black))
-                                )
-                        )
+                    if style {
+                        DarkBackground(isHighlighted: self.pressed ?? configuration.isPressed, shape: Circle())
                     } else {
-                        Circle()
-                            .fill(Color.offWhite)
-                            .shadow(color: Color.black.opacity(0.2), radius: 10, x: 10, y: 10)
-                            .shadow(color: Color.white.opacity(0.7), radius: 10, x: -5, y: -5)
+                        LightBackground(isHighlighted: self.pressed ?? configuration.isPressed, shape: Circle())
                     }
                 }
         )
@@ -132,11 +154,11 @@ struct ContentView: View {
         utterance.rate = 0.2
         utterance.volume = 1.4
         
-//        if self.synthesizer.isSpeaking {
-//            self.synthesizer.stopSpeaking(at: AVSpeechBoundary(rawValue: 0)!)
-//        } else {
+        if self.synthesizer.isSpeaking {
+            self.synthesizer.stopSpeaking(at: AVSpeechBoundary(rawValue: 0)!)
+        } else {
             self.synthesizer.speak(utterance)
-//        }
+        }
     }
     
     func nextKana(next: Bool)
@@ -162,7 +184,12 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            Color.offWhite
+            
+            if colorScheme == .dark {
+                LinearGradient(.darkStart, .darkEnd)
+            } else {
+                Color.offWhite
+            }
             
             VStack (spacing: 30) {
                 HStack (spacing: 30){
@@ -175,7 +202,7 @@ struct ContentView: View {
                         
                         Image(systemName: "chevron.left")
                             .foregroundColor(.gray)
-                    }.buttonStyle(NeuroButtonStyle(width: 60, height: 250))
+                    }.buttonStyle(NeuroButtonStyle(width: 60, height: 250, style: colorScheme == .dark))
                     
                     
                     Button(action: {
@@ -186,7 +213,7 @@ struct ContentView: View {
                         Text(self.hiraganaSequenceToRead[self.selectedKana])
                             .font(.system(size: 130, weight: .light))
                             .foregroundColor(.accentColor)
-                    }.buttonStyle(NeuroButtonStyle(width: 200, height: 250))
+                    }.buttonStyle(NeuroButtonStyle(width: 200, height: 250, style: colorScheme == .dark))
                     
                     Button(action: {
                         self.nextKana(next: true)
@@ -195,8 +222,8 @@ struct ContentView: View {
                         }
                     }){
                         Image(systemName: "chevron.right")
-                            .foregroundColor(.accentColorPurple)
-                    }.buttonStyle(NeuroButtonStyle(width: 60, height: 250))
+                            .foregroundColor(.gray)
+                    }.buttonStyle(NeuroButtonStyle(width: 60, height: 250, style: colorScheme == .dark))
                 }
                 
                 
@@ -205,13 +232,13 @@ struct ContentView: View {
                     .foregroundColor(.gray)
                     .padding(.top, 40)
                 
-                HStack (spacing: 46){
+                HStack (spacing: 30){
                     Button(action: {
                         self.inOrder.toggle()
                     }){
                         Image(systemName: "textformat.abc.dottedunderline")
                             .foregroundColor(.accentColorPurple)
-                    }.buttonStyle(NeuroButtonCircleStyle(pressed: !self.inOrder))
+                    }.buttonStyle(NeuroButtonCircleStyle(pressed: !self.inOrder, style: colorScheme == .dark))
                     
                     Button(action: {
                         print("challange")
@@ -221,7 +248,7 @@ struct ContentView: View {
                     }){
                         Image(systemName: "studentdesk")
                             .foregroundColor(.accentColorPurple)
-                    }.buttonStyle(NeuroButtonCircleStyle(pressed: self.challange))
+                    }.buttonStyle(NeuroButtonCircleStyle(pressed: self.challange, style: colorScheme == .dark))
                     
                     
                     Button(action: {
@@ -233,14 +260,17 @@ struct ContentView: View {
                     }){
                         Image(systemName: "speaker.2.fill")
                             .foregroundColor(.accentColorPurple)
-                    }.buttonStyle(NeuroButtonCircleStyle(pressed: spelling))
+                    }.buttonStyle(NeuroButtonCircleStyle(pressed: spelling, style: colorScheme == .dark))
                     
                     Button(action: {
                         self.selectedKana = 0
+                        if self.spelling {
+                            self.spellKana()
+                        }
                     }){
                         Image(systemName: "arrow.counterclockwise")
                             .foregroundColor(.accentColorPurple)
-                    }.buttonStyle(NeuroButtonCircleStyle())
+                    }.buttonStyle(NeuroButtonCircleStyle(style: colorScheme == .dark))
                 }
                 .padding()
                 
@@ -256,26 +286,5 @@ struct ContentView_Previews: PreviewProvider {
     }
 }
 
-struct CheckMarkToggleStyle: ToggleStyle {
-    var label = ""
-    var color = Color.primary
-    
-    
-    func makeBody(configuration: Self.Configuration) -> some View {
-        HStack {
-            Text(label)
-            Spacer()
-            Button(action: { configuration.isOn.toggle() } )
-            {
-                Image(systemName: configuration.isOn
-                    ? "checkmark.square.fill"
-                    : "square.fill")
-                    .foregroundColor(color)
-            }
-        }
-        .font(.title)
-        .padding(.horizontal)
-    }
-}
 
 
